@@ -7,12 +7,19 @@ import (
 	"Auth-Service/pkg/db"
 	"Auth-Service/pkg/pb"
 	"Auth-Service/pkg/services"
+	"Auth-Service/pkg/utils"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
 	h := db.Init("postgres://postgres:root@localhost:5432/testdb")
+
+	jwt := utils.JwtWrapper{
+		SecretKey:       "183709ehfd",
+		Issuer:          "auth-service",
+		ExpirationHours: 24 * 265,
+	}
 
 	//port number put it in env
 	lis, err := net.Listen("tcp", ":8080")
@@ -22,7 +29,8 @@ func main() {
 	}
 
 	s := services.Server{
-		H: h,
+		H:   h,
+		Jwt: jwt,
 	}
 
 	grpcServer := grpc.NewServer()
