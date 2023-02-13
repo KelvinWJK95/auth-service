@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	h := db.Init("postgres://postgres:root@localhost:5432/testdb")
+	h := db.Init("postgres://postgres:root@localhost:5432/authdb")
 
 	jwt := utils.JwtWrapper{
 		SecretKey:       "183709ehfd",
