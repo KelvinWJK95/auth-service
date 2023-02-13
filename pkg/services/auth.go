@@ -19,9 +19,14 @@ type Server struct {
 func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	var user models.User
 
-	if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
+	if len(req.Email) == 0 {
 		return &pb.RegisterResponse{
-			Status: http.StatusConflict,
+			Status: http.StatusOK,
+			Error:  "Email must be provided",
+		}, nil
+	} else if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
+		return &pb.RegisterResponse{
+			Status: http.StatusOK,
 			Error:  "Email already in use",
 		}, nil
 	}
@@ -41,20 +46,20 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 
 	if len(req.Email) == 0 {
 		return &pb.LoginResponse{
-			Status: http.StatusBadRequest,
+			Status: http.StatusOK,
 			Error:  "Email must be provided",
 		}, nil
 	} else if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error != nil {
 		return &pb.LoginResponse{
-			Status: http.StatusNotFound,
-			Error:  "User not found",
+			Status: http.StatusOK,
+			Error:  "This email is not registered",
 		}, nil
 	}
 
 	//need add has keys
 	if req.Password != user.Password {
 		return &pb.LoginResponse{
-			Status: http.StatusUnauthorized,
+			Status: http.StatusOK,
 			Error:  "Incorrect Password",
 		}, nil
 	}
@@ -66,7 +71,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 
 	if err != nil {
 		return &pb.LoginResponse{
-			Status: http.StatusInternalServerError,
+			Status: http.StatusOK,
 			Error:  err.Error(),
 		}, nil
 	}
